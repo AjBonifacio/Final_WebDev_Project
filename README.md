@@ -1,5 +1,5 @@
 
-**Tu Gustico Galáctico**  
+
 **PROYECTO FINAL PROGRAMACIÓN WEB 2024-C3**
 
 ---
