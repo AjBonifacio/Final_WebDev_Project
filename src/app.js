@@ -4,8 +4,10 @@ const mongoose = require('mongoose');
 const session = require('express-session');
 const router = require('../routes/routes')
 const app = express();
-const PORT = process.env.PORT;
+const path = require('path');
 
+const PORT = process.env.PORT;
+const expressLayouts = require('express-ejs-layouts');
 //CONECTAR BASE DE DATOS
 mongoose.connect(process.env.DB_URI, {
 })
@@ -28,8 +30,14 @@ app.use((req,res,next) =>{
     next()
 })
 
-//Configurar motor de plantillas
-app.set('view engine', 'ejs')
+
+// Configurar motor de plantillas
+app.use(expressLayouts);
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, '../views')); // Apunta al directorio raíz de las vistas
+app.set('layout', 'layouts/main');
+
+app.use('/upload', express.static(path.join(__dirname, '../upload')));
 
 app.use('',router)
 
