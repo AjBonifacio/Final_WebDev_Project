@@ -35,6 +35,22 @@ router.get('/',(req,res) =>{
     res.send('Pagina principal')
 })
 
+//Andy Route put
+
+router.put('/', (req, res)=>{
+    const componente = new componente({
+        codigo: req.body.codigo,
+        nombre: req.body.nombre,
+        foto: req.body.foto,
+        descripcion: req.body.descripcion,
+        cantidad: req.body.cantidad,
+        precio: req.body.precio,
+    })
+    componente.save().then(()=> {
+        console.log("Datos actualizados")
+        res.redirect('/')
+    })
+})
 
 
 module.exports = router;
