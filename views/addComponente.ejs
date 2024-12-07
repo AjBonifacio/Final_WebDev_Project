@@ -1,0 +1,57 @@
+
+
+<%- include('layouts/header') %>
+
+
+<div class="container px-5 my-5">
+     <div class="row">
+           <div class="col-md-3"></div>
+           <div class="col-m-6">
+              <h1>pagina agregar componentes</h1>
+              <form id="add-form" action="/add" method="post" enctype="multipart/form-data">
+                  <!-- Código -->
+                  <div class="mb-3">
+                      <label class="form-label" for="codigo">Código</label>
+                      <input class="form-control" id="codigo" name="codigo" type="text" placeholder="Ingrese el código" required>
+                  </div>
+                  <!-- Nombre -->
+                  <div class="mb-3">
+                      <label class="form-label" for="nombre">Nombre</label>
+                      <input class="form-control" id="nombre" name="nombre" type="text" placeholder="Ingrese el nombre" required>
+                  </div>
+                  <!-- Imagen -->
+                  <div class="mb-3">
+                      <label class="form-label" for="image">Imagen</label>
+                      <input class="form-control" name="image" type="file"  >
+                  </div>
+                  <!-- Descripción -->
+                  <div class="mb-3">
+                      <label class="form-label" for="descripcion">Descripción</label>
+                      <textarea class="form-control" id="descripcion" name="descripcion" rows="3" placeholder="Ingrese una descripción" ></textarea>
+                  </div>
+                  <!-- Cantidad -->
+                  <div class="mb-3">
+                      <label class="form-label" for="cantidad">Cantidad</label>
+                      <input class="form-control" id="cantidad" name="cantidad" type="number" placeholder="Ingrese la cantidad" min="0" required>
+                  </div>
+                  <!-- Precio -->
+                  <div class="mb-3">
+                      <label class="form-label" for="precio">Precio</label>
+                      <input class="form-control" id="precio" name="precio" type="number" placeholder="Ingrese el precio" step="0.01" min="0" required>
+                  </div>
+                  <!-- Botón de envío -->
+                   <div class="d-grid">
+                         <input type="submit" class="btn btn-primary btn-lg" value="addComponente">
+                   </div>
+              </form>
+
+              </form>
+
+           </div>
+     </div> 
+</div>
+   
+    
+
+
+<%- include('layouts/footer') %>

@@ -11,7 +11,7 @@ const componenteSchema = new mongoose.Schema({
         type: String,
         required: true   // Obligatorio
     },
-    foto: {
+    image: {
         type: String,    // Guardará la URL de la imagen
         required: true
     },

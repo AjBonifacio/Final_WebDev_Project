@@ -31,9 +31,44 @@ var upload = multer({
 
 
 //rutas aquí se crean las "Operaciones CRUD"
-router.get('/',(req,res) =>{
-    res.send('Pagina principal')
+router.get('/', async(req,res) =>{
+
+    try{
+        const componentes = await componente.find({})
+       res.render('index',{ titulo:'crud with node.js and exprees ', componentes :componentes})
+       
+
+    }
+    catch(error){
+        res.json({message : error.message})
+    }
+
 })
+
+router.get('/add',(req,res) =>{ 
+    res.render('addComponente', {titulo: 'agregar componente'})
+    })
+
+
+//metodo agregar 
+router.post('/add',upload, (req,res) =>{
+    const newComponente = new componente ({
+        codigo: req.body.codigo,
+        nombre: req.body.nombre,
+        image : req.file.filename,
+        descripcion: req.body.descripcion,
+        cantidad: req.body.cantidad,
+        precio: req.body.precio
+
+    })
+     newComponente.save().then(() =>{
+        console.log("se guardo")
+
+        res.redirect('/')
+     }).catch((error) => {
+        console.log(error)
+     })
+})    
 
 
 
