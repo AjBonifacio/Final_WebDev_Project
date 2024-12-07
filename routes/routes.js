@@ -1,91 +1,115 @@
-//constantes que vamos a utilizar
-const express = require('express')
-const router = express.Router()
-const multer = require('multer')
-const path = require('path')
-const fs = require('fs')
-//modelo componente
-const componente = require("../models/componente")
+const express = require('express');
+const router = express.Router();
+const multer = require('multer');
+const path = require('path');
+const Componente = require('../models/componente');
 
-//constante de la carpeta donde se guardan las fotos
-const carpetaUpload = path.join(__dirname,'../upload')
-
-
-
-//configurando el guardado de fotos
+// Configuración de la carpeta para guardar imágenes
+const carpetaUpload = path.join(__dirname, '../upload');
 var storage = multer.diskStorage({
-    destination: function(req,file,cb){
-        cb(null,carpetaUpload)
-
+    destination: function (req, file, cb) {
+        cb(null, carpetaUpload);
     },
-    filename: function(req,file,cb){
-        cb(null,Date.now() + file.originalname)
+    filename: function (req, file, cb) {
+        cb(null, Date.now() + path.extname(file.originalname));
+    },
+});
+var upload = multer({ storage: storage });
+
+// Página principal: listar componentes
+router.get('/', async (req, res) => {
+    try {
+        const componentes = await Componente.find(); // Obtiene todos los componentes
+        console.log("Componentes encontrados:", componentes); // Depuración en consola
+        res.render('layouts/index', { componentes }); // Renderiza la vista con los datos
+    } catch (error) {
+        console.error("Error al obtener los componentes:", error);
+        res.status(500).send('Error al obtener los componentes.');
     }
-})
-var upload = multer({
-    storage: storage
-}).single(`image`)//para que esto funcione el encargado de crear la vista de crear componentes tiene
-//que ponerle el nombre exacto image al campo de subir la imagen y el método tiene que se post
-// porfavor usar forms en el html que en este caso son ejs -Axel Soto
+});
+
+// Ruta para mostrar el formulario de creación
+router.get('/crear', (req, res) => {
+    res.render('layouts/crear'); // Asegúrate de usar 'layouts/'
+});
 
 
+// Guardar componente en la base de datos
+// Guardar componente en la base de datos
+router.post('/crear', upload.single('foto'), async (req, res) => {
+    try {
+        // Obtener la primera letra del nombre
+        const primeraLetra = req.body.nombre.charAt(0).toUpperCase();
 
-//rutas aquí se crean las "Operaciones CRUD"
-router.get('/',(req,res) =>{
-    res.send('Pagina principal')
-})
+        // Buscar el último código que comienza con esa letra
+        const ultimoComponente = await Componente.findOne({ codigo: { $regex: `^${primeraLetra}` } })
+            .sort({ codigo: -1 }) // Ordenar de forma descendente
+            .exec();
 
-//Andy Route put
-
-//Editar
-//editar por id
-router.get('/edit/:id', async(req, res)=>{
-    const id = req.params.id
-
-    try{
-        
-        const componente = await componente.findbyId(id)
-        if (componente == null){
-            res.redirect('/')
-
+        // Generar el nuevo código
+        let nuevoCodigo = `${primeraLetra}001`; // Código inicial por defecto
+        if (ultimoComponente) {
+            const ultimoNumero = parseInt(ultimoComponente.codigo.slice(1)); // Extraer el número del código
+            nuevoCodigo = `${primeraLetra}${String(ultimoNumero + 1).padStart(3, '0')}`; // Incrementar el número
         }
-        else {
-            res.render('editcomponente',{
-                titulo: 'Editar componente',
-                componente: componente        
-            })
-        }
+
+        // Crear el nuevo componente
+        const nuevoComponente = new Componente({
+            codigo: nuevoCodigo, // Código generado automáticamente
+            nombre: req.body.nombre,
+            foto: req.file ? req.file.filename : null,
+            descripcion: req.body.descripcion,
+            cantidad: req.body.cantidad,
+            precio: req.body.precio,
+        });
+
+        // Guardar en la base de datos
+        await nuevoComponente.save();
+        res.redirect('/');
+    } catch (error) {
+        console.error('Error al crear el componente:', error);
+        res.status(400).send('Error al crear el componente.');
     }
-    
-    catch(error){
-        res.status(500).send
+});
+
+
+// Formulario para editar componente
+router.get('/editar/:id', async (req, res) => {
+    try {
+        const componente = await Componente.findById(req.params.id);
+        res.render('layouts/editar', { componente });
+    } catch (error) {
+        res.status(404).send('Componente no encontrado.');
     }
-    //subir imagen
-    router.post('/update:id', upload, async(req, res)=> {
-        const id = req.params.id
-        let new_image = ''
+});
 
-        if (req.file){
-            new_file = req.file.filename
+// Actualizar componente
+router.post('/editar/:id', upload.single('foto'), async (req, res) => {
+    try {
+        const datosActualizados = {
+            codigo: req.body.codigo,
+            nombre: req.body.nombre,
+            descripcion: req.body.descripcion,
+            cantidad: req.body.cantidad,
+            precio: req.body.precio,
+        };
+        if (req.file) datosActualizados.foto = req.file.filename;
 
-            try{
-                //sustituir imagen vieja por una nueva
-                fs.unlinkSync('./upload/' + req.body.old_image)
-            }
-            catch(error){
-                console.log(error)
-            }
-        }
-        else{
-            new_images = req.body.old_image
-        }
-        try{
-            await componente.findByIdAndUpdate(id,{
-                //Campos de formulario
-                nombre: req.body.name
-            })
-        }
-    })
-})
+        await Componente.findByIdAndUpdate(req.params.id, datosActualizados);
+        res.redirect('/');
+    } catch (error) {
+        res.status(400).send('Error al actualizar el componente.');
+    }
+});
+
+// Eliminar componente
+router.get('/eliminar/:id', async (req, res) => {
+    try {
+        await Componente.findByIdAndDelete(req.params.id);
+        res.redirect('/');
+    } catch (error) {
+        res.status(400).send('Error al eliminar el componente.');
+    }
+});
 
 module.exports = router;
